@@ -1,0 +1,81 @@
+retry_max: 5
+repeat_sleep: 3600 #1小时间隔,单位：秒
+
+headers:
+  User-Agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0'
+
+cookies:
+  #固定，可以乱改
+  cna: 'Uc6XWBoY3AkCCSQJilXll2c9'
+  xlly_s: '1'
+  #固定，可以乱改
+  t: '768f5896bc35586dcc2236411c06a939'
+  _samesite_flag_: 'true'
+  #会变,可以没有
+  _tb_token_: '55e1d7466bee3' 
+  #会变,可以没有
+  cookie2: '1f9e44d62f5599fc94763d5bbd60e13f'
+  mtop_partitioned_detect: '1'
+  #令牌 过期后调用函数获取
+  _m_h5_tk: 'ee4d536d9cee92ef65e5566d85215643_1745592324466'
+  _m_h5_tk_enc: '4e125d00cd690ea25a19946bd5921022'
+
+params:
+  jsv: '2.7.2'
+  #固定,可以乱改
+  appKey: '12574478'
+  #时间戳
+  t: '1745502740112'
+  #动态代码生成md5 签名
+  sign: '2a690066099ebae7c0848df8a2ca06c1'
+  v: '1.0'
+  type: 'originaljson'
+  accountSite: 'xianyu'
+  dataType: 'json'
+  timeout: '20000'
+  api: 'mtop.taobao.idlemtopsearch.pc.search'
+  sessionOption: 'AutoLoginOnly'
+  #只是记录行为的埋点而已，搜索或者点击的，固定值。a21ybx可能是咸鱼网页？
+  spm_cnt: 'a21ybx.search.0.0'
+  spm_pre: 'a21ybx.home.searchInput.0'
+
+data:
+  #页数
+  pageNumber: 1
+  #搜索关键词
+  keyword: "电脑"
+  #是否过滤搜索，如果不过滤，直接搜的话为false
+  fromFilter: "true"
+  #每页条数
+  rowsPerPage: 30
+  #按价格排序: ''为不排序、'asc'为从低到高、'desc'为从高到低
+  sortValue: ""
+  #综合、新降价、新发布：''为第1个下拉框默认“综合”不排序、'credit'为信用、'pos'为离我最近、'modify'为最近活跃、'reduce'为第2个按钮新降价、'create'为第3个按钮最新(但不包含3、7、14天内发布，这几个情况这个值为'')
+  sortField: ""
+  #固定值没测出，可能是距离
+  customDistance: ""
+  #自己的IP地址
+  gps: ""
+  #过滤
+  # "propValueStr":{"searchFilter":"publishDays:7;priceRange:18,28;quickFilter:filterPersonal,filterAppraise,gameAccountInsurance,filterFreePostage,filterHighLevelYxpSeller,filterNew,inspectedPhone,filterOneKeyResell;"}
+  # "propValueStr":{"searchFilter":"publishDays:3;"}
+  propValueStr: 
+    searchFilter:
+      #发布日期 : 1、3、7、14 （上面sortField填了最新的话，这只能填空）
+      publishDays: ""
+      #价格区间: 18,undefined （undefined）为不限制
+      priceRange: "18,28"
+      #下排打勾过滤：'filterPersonal,filterAppraise,gameAccountInsurance,filterFreePostage,filterHighLevelYxpSeller,filterNew,inspectedPhone,filterOneKeyResell;' 个人闲置、验货宝、验号担保、包邮、超赞鱼小铺、全新、严选、转卖
+      quickFilter: "filterFreePostage"
+  #自己的IP地址
+  customGps: ""
+  #固定值
+  searchReqFromPage: "pcSearch"
+  #卖家地址: '{"divisionList":[],"excludeMultiPlacesSellers":"0","extraDivision":"江浙沪"}'
+  extraFilterValue: "{}"
+  #没测出，但可能是用户位置
+  userPositionJson: "{}"
+  #直接用这个，如果这个为空就用上面数据组合而成
+  # data: '{"pageNumber":1,"keyword":"玩客云","fromFilter":true,"rowsPerPage":30,"sortValue":"desc","sortField":"reduce","customDistance":"","gps":"","propValueStr":{"searchFilter":"quickFilter:filterPersonal,filterAppraise,gameAccountInsurance,filterFreePostage,filterHighLevelYxpSeller,filterNew,inspectedPhone,filterOneKeyResell;"},"customGps":"","searchReqFromPage":"pcSearch","extraFilterValue":"{\"divisionList\":[],\"excludeMultiPlacesSellers\":\"0\",\"extraDivision\":\"江浙沪\"}","userPositionJson":"{}"}'
+  # data: '{"pageNumber":1,"keyword":"玩客云","fromFilter":false,"rowsPerPage":30,"sortValue":"","sortField":"","customDistance":"","gps":"","propValueStr":{},"customGps":"","searchReqFromPage":"pcSearch","extraFilterValue":"{}","userPositionJson":"{}"}'
+  data: ""
