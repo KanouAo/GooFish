@@ -49,13 +49,14 @@ def test_ip(proxy):
         "https": "http://" + proxy,
     }
     try:
-        response = requests.get(url='http://ifconfig.me/ip',headers=option['headers'],proxies=proxies) #设置timeout，使响应等待1s http://ifconfig.me/ip
+        response = requests.get(url='http://www.baidu.com',headers=option['headers'],proxies=proxies) #没设置timeout，使响应等待1s，有的免费代理时间长但能用 http://ifconfig.me/ip 这个测IP的有时测代理反而连不上
         response.close()
         if response.status_code == 200:
             return True
         else:
             return False
-    except:
+    except Exception as e:
+        print(e)
         return False
 
 def get_proxies():
