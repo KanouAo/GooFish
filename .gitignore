@@ -2,3 +2,5 @@ test_option.yaml
 test.py
 get_free_ip.py
 good_record.json
+__pycache__
+.vscode

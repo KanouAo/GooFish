@@ -1,13 +1,16 @@
+# 系统自带
 import hashlib
 import json
 import os
 import random
 import threading
-from bs4 import BeautifulSoup
-from ruamel.yaml import YAML
 import time
-import requests
 import utils as utils
+
+# 三方
+import requests
+from ruamel.yaml import YAML
+from bs4 import BeautifulSoup
 from wechat_service import send_good as wechat_service_send
 
 yaml = YAML(typ='rt')
@@ -201,6 +204,7 @@ class 物品信息类:
                 #更新令牌, 再给配置写上令牌
                 self.make_token()
                 return '令牌过期'
+                # 第1次使用必定是非法令牌，就是需要用非法的去拿合法的。
             case 'FAIL_SYS_TOKEN_INVALID::非法令牌':
                 self.make_token()
                 return '非法令牌'
