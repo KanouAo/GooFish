@@ -1,22 +1,23 @@
-//  统一请求入口：Mock 模式走本地适配层，真实模式走 axios；页面只与本文件打交道
+//  统一请求入口：统一走 axios 到 Python 后端（Server/api_server.py）；前端 Mock 逻辑已停用（见下方注释块）
 
 import axios, { type AxiosRequestConfig, type Method } from 'axios'
 import { message } from 'antd'
-import { 分发Mock } from '@/mock'
-import { 注册全部Mock路由 } from '@/mock/handlers'
 import type { 统一响应类型 } from '@/types/biz'
 
-/** 是否启用本地 Mock，由 .env 中 VITE_USE_MOCK 控制 */
-const 启用Mock = import.meta.env.VITE_USE_MOCK === 'true'
-
-// Mock 模式下：模块加载完成后显式注册全部路由（此时依赖均已初始化）
-if (启用Mock) {
-  注册全部Mock路由()
-}
+// —— 前端 Mock 逻辑整体停用 ——
+// 如需恢复：取消下方注释，并把 .env 中 VITE_USE_MOCK 设为 true
+// import { 分发Mock } from '@/mock'
+// import { 注册全部Mock路由 } from '@/mock/handlers'
+// /** 是否启用本地 Mock，由 .env 中 VITE_USE_MOCK 控制 */
+// const 启用Mock = import.meta.env.VITE_USE_MOCK === 'true'
+// // Mock 模式下：模块加载完成后显式注册全部路由（此时依赖均已初始化）
+// if (启用Mock) {
+//   注册全部Mock路由()
+// }
 
 const http实例 = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 15000,
+  timeout: 120000, // 真实爬取含重试可能耗时较长
 })
 
 // 请求拦截器：预留鉴权信息注入位（当前口令仅占位）
@@ -41,15 +42,15 @@ export interface 请求选项类型 {
  * @param url 接口路径，如 /tasks/:id
  */
 export async function 请求<T>(url: string, 选项: 请求选项类型 = {}): Promise<T> {
-  // Mock 模式：直接分发到本地处理器
-  if (启用Mock) {
-    return 分发Mock<T>({
-      url,
-      method: 选项.method ?? 'GET',
-      query: 选项.参数 ?? {},
-      body: 选项.data,
-    })
-  }
+  // —— Mock 分发分支已停用（如需恢复参考文件头注释）——
+  // if (启用Mock) {
+  //   return 分发Mock<T>({
+  //     url,
+  //     method: 选项.method ?? 'GET',
+  //     query: 选项.参数 ?? {},
+  //     body: 选项.data,
+  //   })
+  // }
 
   const axios配置: AxiosRequestConfig = {
     url,

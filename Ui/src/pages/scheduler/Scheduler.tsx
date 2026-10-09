@@ -104,7 +104,9 @@ export default function 调度页() {
     set执行中ID(任务ID)
     try {
       const 新记录 = await 立即执行任务(任务ID)
-      message.success(`执行完成，命中 ${新记录.结果数} 件，新商品 ${新记录.新商品数} 件`)
+      message.success(
+        `命中 ${新记录.结果数} 件，新增 ${新记录.新商品数} 件已进入待处理，请在商品数据页审核`,
+      )
       await 刷新全部()
     } finally {
       set执行中ID(null)
@@ -126,7 +128,7 @@ export default function 调度页() {
     },
     { title: '耗时(秒)', dataIndex: '耗时秒', width: 90 },
     { title: '结果数', dataIndex: '结果数', width: 80 },
-    { title: '新商品', dataIndex: '新商品数', width: 80 },
+    { title: '待处理', dataIndex: '新商品数', width: 80 },
     { title: '推送数', dataIndex: '推送数', width: 80 },
     { title: '信息', dataIndex: '信息', ellipsis: true },
   ]

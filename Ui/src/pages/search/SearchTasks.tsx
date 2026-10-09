@@ -135,8 +135,12 @@ export default function 搜索任务页() {
 
   /** 删除任务 */
   const 确认删除 = async (id: string) => {
-    await 删除任务(id)
-    message.success('任务已删除')
+    const 结果 = await 删除任务(id)
+    message.success(
+      结果.清空商品数 > 0
+        ? `任务已删除，同步清空了 ${结果.清空商品数} 条商品记录`
+        : '任务已删除',
+    )
     await 加载列表()
   }
 
@@ -145,7 +149,9 @@ export default function 搜索任务页() {
     set试跑中ID(id)
     try {
       const 结果 = await 试跑任务(id)
-      message.success(`${结果.信息}，命中 ${结果.结果数} 件，新商品 ${结果.新商品数} 件`)
+      message.success(
+        `${结果.信息}，命中 ${结果.结果数} 件，新增 ${结果.新商品数} 件已进入待处理审核`,
+      )
     } finally {
       set试跑中ID(null)
     }
@@ -241,7 +247,7 @@ export default function 搜索任务页() {
           </Button>
           <Popconfirm
             title="确认删除该搜索任务？"
-            description="删除后不可恢复"
+            description="删除后不可恢复，该任务已收录的商品记录将一并清空"
             okText="删除"
             okButtonProps={{ danger: true }}
             cancelText="取消"

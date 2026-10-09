@@ -3,7 +3,7 @@ push:
   #当前设备
   device: false
   #自己的微信公众号推送，详见使用手册
-  wechat_service: true
+  wechat_service: false
 #隐私信息随机生成(比如机器编号，cooies之类的每次启动程序后随机生成): true 为是，flase 为否
 random_option: true
 #是否使用代理IP

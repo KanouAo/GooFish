@@ -22,9 +22,9 @@ export const 新建任务 = (表单: 搜索任务表单类型) =>
 export const 更新任务 = (id: string, 表单: 搜索任务表单类型) =>
   请求<搜索任务类型>(`/tasks/${id}`, { method: 'PUT', data: 表单 })
 
-/** 删除搜索任务 */
+/** 删除搜索任务（后端会同步清空该任务已收录的商品记录） */
 export const 删除任务 = (id: string) =>
-  请求<{ id: string }>(`/tasks/${id}`, { method: 'DELETE' })
+  请求<{ id: string; 清空商品数: number }>(`/tasks/${id}`, { method: 'DELETE' })
 
 /** 启用/停用搜索任务 */
 export const 切换任务状态 = (id: string, 启用: boolean) =>

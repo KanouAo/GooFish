@@ -79,11 +79,24 @@ export interface 商品查询类型 {
   页码: number
   每页条数: number
   关键词?: string
+  所属关键词?: string
   地区?: string
   最低价格?: number | null
   最高价格?: number | null
   只看降价?: boolean
   只看收藏?: boolean
+}
+
+/** 黑名单商品：删除时选择拉黑的商品，后端爬取到也不会再收录 */
+export interface 黑名单商品类型 {
+  /** 以商品ID作为主键 */
+  id: string
+  商品ID: string
+  标题: string
+  价格: number
+  图片: string
+  所属关键词: string
+  加入时间: string
 }
 
 // ===================== 任务调度 =====================

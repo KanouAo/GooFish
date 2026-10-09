@@ -114,11 +114,14 @@ class 物品信息类:
         #     self.data=self.search_data
 
     def make_token(self):
-        '''制作令牌'''
-        new_cookies = requests.utils.dict_from_cookiejar(self.res.cookies)
-        self.cookies['_m_h5_tk'] = new_cookies['_m_h5_tk']
-        self.cookies['_m_h5_tk_enc'] = new_cookies['_m_h5_tk_enc']
-        update_option_yaml()
+        '''制作令牌：从响应中取真实令牌写回内存与配置文件；被风控时响应可能缺令牌，保留旧值等待下次重试'''
+        try:
+            new_cookies = requests.utils.dict_from_cookiejar(self.res.cookies)
+            self.cookies['_m_h5_tk'] = new_cookies['_m_h5_tk']
+            self.cookies['_m_h5_tk_enc'] = new_cookies['_m_h5_tk_enc']
+            update_option_yaml()
+        except Exception as e:
+            print('令牌续期未成功，保留旧令牌等待下次重试: '+str(e))
         pass
     def make_search_data(self):
         '''制作搜索用的数据'''
@@ -215,7 +218,7 @@ class 物品信息类:
                 return '请求参数非法'
             case _:
                 print("其他失败：   "+str(ret))
-                return '其他失败'
+                return '其他失败：'+str(ret)
 
     def make_good_list_and_push(self):
         '''制作商品列表，剔除已推送且没降价的，用于推送提示自己'''

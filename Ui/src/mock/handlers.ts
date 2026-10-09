@@ -2,7 +2,7 @@
 // 所有注册逻辑包在 注册全部Mock路由() 内，由请求层在模块就绪后显式调用，避免循环依赖初始化问题
 
 import { 注册路由, type Mock上下文类型 } from './index'
-import { 数据库, 偏移时间, 格式化时间 } from './db'
+import { 数据库, 偏移时间, 格式化时间, 生成新商品 } from './db'
 import type {
   分页结果类型,
   商品类型,
@@ -13,6 +13,7 @@ import type {
   调度状态类型,
   看板统计类型,
 } from '@/types/biz'
+// 黑名单商品类型在处理器内以对象字面量构造，结构由 db.ts 的种子保证一致
 
 // ---------- 查询参数取值小工具 ----------
 const 取文本 = (值: unknown): string => (值 === undefined || 值 === null ? '' : String(值))
@@ -94,8 +95,11 @@ export function 注册全部Mock路由(): void {
   注册路由('DELETE', '/tasks/:id', (ctx: Mock上下文类型) => {
     const 索引 = 数据库.任务列表.findIndex((t) => t.id === ctx.params.id)
     if (索引 === -1) throw new Error('任务不存在')
-    数据库.任务列表.splice(索引, 1)
-    return { id: ctx.params.id }
+    const [被删任务] = 数据库.任务列表.splice(索引, 1)
+    // 删除任务时同步清空该任务已收录的商品记录（黑名单不受影响）
+    const 清空数量 = 数据库.商品列表.filter((g) => g.所属关键词 === 被删任务.关键词).length
+    数据库.商品列表 = 数据库.商品列表.filter((g) => g.所属关键词 !== 被删任务.关键词)
+    return { id: ctx.params.id, 清空商品数: 清空数量 }
   })
 
   注册路由('PATCH', '/tasks/:id/status', (ctx: Mock上下文类型) => {
@@ -105,14 +109,16 @@ export function 注册全部Mock路由(): void {
     return { id: 任务.id, 启用: 任务.启用 }
   })
 
-  /** 手动试跑一次：模拟请求咸鱼接口并返回命中概况 */
+  /** 手动试跑一次：模拟请求咸鱼接口，新商品进入待处理审核队列 */
   注册路由('POST', '/tasks/:id/run', (ctx: Mock上下文类型) => {
     const 任务 = 数据库.任务列表.find((t) => t.id === ctx.params.id)
     if (!任务) throw new Error('任务不存在')
+    const 新商品数 = 2 + (Number(任务.id) % 3)
+    数据库.待处理列表.unshift(...Array.from({ length: 新商品数 }, () => 生成新商品(任务.关键词)))
     return {
       任务ID: 任务.id,
       结果数: 18 + (Number(任务.id) % 12),
-      新商品数: Number(任务.id) % 5,
+      新商品数,
       信息: `关键词「${任务.关键词}」试跑完成`,
     }
   })
@@ -123,12 +129,14 @@ export function 注册全部Mock路由(): void {
     const 页码 = 取数字(ctx.query.页码) ?? 1
     const 每页条数 = 取数字(ctx.query.每页条数) ?? 10
     const 关键词 = 取文本(ctx.query.关键词).trim()
+    const 所属关键词 = 取文本(ctx.query.所属关键词)
     const 地区 = 取文本(ctx.query.地区)
     const 最低价格 = 取数字(ctx.query.最低价格)
     const 最高价格 = 取数字(ctx.query.最高价格)
 
     const 过滤后 = 数据库.商品列表.filter((g) => {
       if (关键词 && !g.标题.includes(关键词)) return false
+      if (所属关键词 && g.所属关键词 !== 所属关键词) return false
       if (地区 && g.地区 !== 地区) return false
       if (最低价格 !== null && g.价格 < 最低价格) return false
       if (最高价格 !== null && g.价格 > 最高价格) return false
@@ -159,6 +167,88 @@ export function 注册全部Mock路由(): void {
     if (!商品) throw new Error('商品不存在')
     商品.收藏 = 取布尔((ctx.body as { 收藏?: unknown }).收藏)
     return { id: 商品.id, 收藏: 商品.收藏 }
+  })
+
+  // ===================== 黑名单 / 清空缓存 =====================
+
+  /** 获取黑名单列表 */
+  注册路由('GET', '/goods/blacklist', () => 数据库.黑名单列表)
+
+  /** 删除并加入黑名单：商品从列表移除，后端爬取到也不再收录 */
+  注册路由('POST', '/goods/:id/blacklist', (ctx: Mock上下文类型) => {
+    const 索引 = 数据库.商品列表.findIndex((g) => g.id === ctx.params.id)
+    if (索引 === -1) throw new Error('商品不存在')
+    const 商品 = 数据库.商品列表[索引]
+    数据库.商品列表.splice(索引, 1)
+    if (!数据库.黑名单列表.some((b) => b.商品ID === 商品.id)) {
+      数据库.黑名单列表.unshift({
+        id: 商品.id,
+        商品ID: 商品.id,
+        标题: 商品.标题,
+        价格: 商品.价格,
+        图片: 商品.图片,
+        所属关键词: 商品.所属关键词,
+        加入时间: 格式化时间(new Date()),
+      })
+    }
+    return { id: 商品.id }
+  })
+
+  /** 从黑名单还原：仅解除拉黑，商品是否重新出现取决于之后的爬取结果 */
+  注册路由('POST', '/goods/blacklist/:id/restore', (ctx: Mock上下文类型) => {
+    const 索引 = 数据库.黑名单列表.findIndex((b) => b.id === ctx.params.id)
+    if (索引 === -1) throw new Error('黑名单记录不存在')
+    const [记录] = 数据库.黑名单列表.splice(索引, 1)
+    return { id: 记录.商品ID }
+  })
+
+  /** 清空全部商品数据（黑名单不受影响） */
+  注册路由('POST', '/goods/clear', () => {
+    const 清空数量 = 数据库.商品列表.length
+    数据库.商品列表 = []
+    return { 清空数量 }
+  })
+
+  // ===================== 待处理审核 =====================
+
+  /** 获取待处理商品列表（新爬到、待人工审核） */
+  注册路由('GET', '/goods/pending', () => 数据库.待处理列表)
+
+  /** 待处理商品收录进商品列表 */
+  注册路由('POST', '/goods/pending/:id/accept', (ctx: Mock上下文类型) => {
+    const 索引 = 数据库.待处理列表.findIndex((g) => g.id === ctx.params.id)
+    if (索引 === -1) throw new Error('待处理商品不存在')
+    const [商品] = 数据库.待处理列表.splice(索引, 1)
+    if (!数据库.商品列表.some((g) => g.id === 商品.id)) {
+      数据库.商品列表.unshift(商品)
+    }
+    return { id: 商品.id }
+  })
+
+  /** 待处理商品直接拉黑 */
+  注册路由('POST', '/goods/pending/:id/blacklist', (ctx: Mock上下文类型) => {
+    const 索引 = 数据库.待处理列表.findIndex((g) => g.id === ctx.params.id)
+    if (索引 === -1) throw new Error('待处理商品不存在')
+    const [商品] = 数据库.待处理列表.splice(索引, 1)
+    if (!数据库.黑名单列表.some((b) => b.商品ID === 商品.id)) {
+      数据库.黑名单列表.unshift({
+        id: 商品.id,
+        商品ID: 商品.id,
+        标题: 商品.标题,
+        价格: 商品.价格,
+        图片: 商品.图片,
+        所属关键词: 商品.所属关键词,
+        加入时间: 格式化时间(new Date()),
+      })
+    }
+    return { id: 商品.id }
+  })
+
+  /** 一键清空黑名单 */
+  注册路由('POST', '/goods/blacklist/clear', () => {
+    const 清空数量 = 数据库.黑名单列表.length
+    数据库.黑名单列表 = []
+    return { 清空数量 }
   })
 
   // ===================== 爬取任务调度 =====================
@@ -194,10 +284,12 @@ export function 注册全部Mock路由(): void {
 
   注册路由('GET', '/scheduler/records', () => 数据库.执行记录)
 
-  /** 立即执行指定任务：生成一条新的执行记录并置于最前 */
+  /** 立即执行指定任务：生成一条新的执行记录，新商品进入待处理审核队列 */
   注册路由('POST', '/scheduler/run/:taskId', (ctx: Mock上下文类型) => {
     const 任务 = 数据库.任务列表.find((t) => t.id === ctx.params.taskId)
     if (!任务) throw new Error('任务不存在')
+    const 新商品数 = 1 + (Number(任务.id) % 4)
+    数据库.待处理列表.unshift(...Array.from({ length: 新商品数 }, () => 生成新商品(任务.关键词)))
     const 新记录 = {
       id: `${Date.now()}`,
       任务ID: 任务.id,
@@ -206,9 +298,9 @@ export function 注册全部Mock路由(): void {
       耗时秒: 4 + (Number(任务.id) % 6),
       状态: '成功' as const,
       结果数: 20 + (Number(任务.id) % 10),
-      新商品数: Number(任务.id) % 4,
-      推送数: Number(任务.id) % 3,
-      信息: '手动触发，获得成功',
+      新商品数,
+      推送数: 0,
+      信息: '手动触发，获得成功，新商品待审核',
     }
     数据库.执行记录.unshift(新记录)
     数据库.上次执行时间 = 新记录.开始时间
