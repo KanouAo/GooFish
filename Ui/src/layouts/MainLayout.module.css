@@ -1,0 +1,40 @@
+/*  主布局样式：品牌区、顶栏、内容区间距 */
+
+.品牌区 {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  user-select: none;
+}
+
+.顶栏 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.内容区 {
+  padding: 16px;
+  min-height: calc(100vh - 64px);
+}
+
+/* 小屏收窄内边距，避免列表贴边 */
+@media (max-width: 768px) {
+  .内容区 {
+    padding: 12px;
+  }
+  .顶栏 {
+    padding: 0 8px;
+  }
+}
