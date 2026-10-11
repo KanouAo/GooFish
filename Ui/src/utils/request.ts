@@ -3,25 +3,24 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios'
 import { message } from 'antd'
 import type { 统一响应类型 } from '@/types/biz'
+import { 后端基址 } from '@/utils/后端地址'
 
-// —— 前端 Mock 逻辑整体停用 ——
-// 如需恢复：取消下方注释，并把 .env 中 VITE_USE_MOCK 设为 true
-// import { 分发Mock } from '@/mock'
-// import { 注册全部Mock路由 } from '@/mock/handlers'
-// /** 是否启用本地 Mock，由 .env 中 VITE_USE_MOCK 控制 */
-// const 启用Mock = import.meta.env.VITE_USE_MOCK === 'true'
-// // Mock 模式下：模块加载完成后显式注册全部路由（此时依赖均已初始化）
-// if (启用Mock) {
-//   注册全部Mock路由()
-// }
+import { 分发Mock } from '@/mock'
+import { 注册全部Mock路由 } from '@/mock/handlers'
+/** 是否启用本地 Mock，由 .env 中 VITE_USE_MOCK 控制 */
+const 启用Mock = import.meta.env.VITE_USE_MOCK === 'true'
+// Mock 模式下：模块加载完成后显式注册全部路由（此时依赖均已初始化）
+if (启用Mock) {
+  注册全部Mock路由()
+}
 
 const http实例 = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 120000, // 真实爬取含重试可能耗时较长
+  timeout: 15000,
 })
 
-// 请求拦截器：预留鉴权信息注入位（当前口令仅占位）
+// 请求拦截器：baseURL 每次请求实时读取系统设置里保存的后端 IP/端口（未配置则走 /api proxy）
 http实例.interceptors.request.use((配置) => {
+  配置.baseURL = 后端基址()
   const 口令 = localStorage.getItem('访问口令')
   if (口令 && 配置.headers) {
     配置.headers.Authorization = `Bearer ${口令}`
@@ -42,15 +41,15 @@ export interface 请求选项类型 {
  * @param url 接口路径，如 /tasks/:id
  */
 export async function 请求<T>(url: string, 选项: 请求选项类型 = {}): Promise<T> {
-  // —— Mock 分发分支已停用（如需恢复参考文件头注释）——
-  // if (启用Mock) {
-  //   return 分发Mock<T>({
-  //     url,
-  //     method: 选项.method ?? 'GET',
-  //     query: 选项.参数 ?? {},
-  //     body: 选项.data,
-  //   })
-  // }
+  // —— Mock 分发分支已停用（如需恢复把 .env 中 VITE_USE_MOCK 设为 true）——
+  if (启用Mock) {
+    return 分发Mock<T>({
+      url,
+      method: 选项.method ?? 'GET',
+      query: 选项.参数 ?? {},
+      body: 选项.data,
+    })
+  }
 
   const axios配置: AxiosRequestConfig = {
     url,

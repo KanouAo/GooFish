@@ -1,6 +1,9 @@
+#微信公众号推送总开关：true 时每轮上新/降价商品逐条全部推送，false 不推
+wechat_service: true
 appID: wx4f3bd658fe197500
 appsecret: d4cbe7d698bafd21e8a8aa15eb380581
-template_id: 5K_hmrZGv41pS0iAejTJF9DSX6gcec6WW4hWqYaiKMU
+template_id: DeeSaNF6gwVFK8ttxmGR2kGtdHTksCAjxHWcitI7emA
 userid: oZGz87Ns5UXQEZN-l1uB4rcmFeEE
+# 随机生成的
 token: 
-  108_eGEBtOPpVoOifXWdVcNsYbP4gPdbmMwG-1zE8CQM8tjys4OqTRAsxiynZPF5fqtGLIm7IB3EXivCuQ7350lTT3Ds2gVAwHme8cHN4KA8NTgUeLSJsVfbpEHVKEEZVObABAQMF
+  108_lQ4vWJ7nuG9pZTeUVcNsYbP4gPdbmMwG-1zE8K-kPAUpzge2XR7Dpu-LuLuX9EXBghAZ9K6kbfsA2R1TUoKGEN3-30ke5W3HbUZgor9XkKWdXsnM8DkDwlpR7GAEZAdAAASNO

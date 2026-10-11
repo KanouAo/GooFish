@@ -1,5 +1,8 @@
-appID: 填你的
-appsecret: 填你的
-template_id: 填你的
-userid: 要发送给用户的编号
-token: 自动生成
+#微信公众号推送总开关：true 时每轮上新/降价商品逐条全部推送，false 不推。我设置每秒推1条。
+wechat_service: false
+appID: 
+appsecret: 
+template_id: 
+userid: 
+# 随机生成的
+token: 

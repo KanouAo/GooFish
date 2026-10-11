@@ -1,0 +1,4 @@
+#  后端第三方依赖（Python 3.12+ 标准库之外）
+requests>=2.31
+ruamel.yaml>=0.18
+beautifulsoup4>=4.12

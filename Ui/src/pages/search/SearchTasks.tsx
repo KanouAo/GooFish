@@ -27,7 +27,6 @@ import {
   新建任务,
   更新任务,
   获取任务列表,
-  试跑任务,
 } from '@/api/task'
 import {
   快捷过滤选项,
@@ -49,7 +48,7 @@ const 取默认表单值 = (): 搜索任务表单类型 => ({
   发布天数: '',
   快捷过滤: [],
   卖家地区: '',
-  页数: 1,
+  页数: 50,
   每页条数: 30,
   启用: true,
   备注: '',
@@ -68,7 +67,6 @@ export default function 搜索任务页() {
   const [编辑ID, set编辑ID] = useState<string | null>(null)
   const [表单] = Form.useForm<搜索任务表单类型>()
   const [保存中, set保存中] = useState(false)
-  const [试跑中ID, set试跑中ID] = useState<string | null>(null)
 
   /** 拉取任务列表 */
   const 加载列表 = async (条件?: { 关键词?: string; 启用状态?: boolean }) => {
@@ -142,19 +140,6 @@ export default function 搜索任务页() {
         : '任务已删除',
     )
     await 加载列表()
-  }
-
-  /** 手动试跑一次 */
-  const 执行试跑 = async (id: string) => {
-    set试跑中ID(id)
-    try {
-      const 结果 = await 试跑任务(id)
-      message.success(
-        `${结果.信息}，命中 ${结果.结果数} 件，新增 ${结果.新商品数} 件已进入待处理审核`,
-      )
-    } finally {
-      set试跑中ID(null)
-    }
   }
 
   /** 切换启停 */
@@ -231,17 +216,9 @@ export default function 搜索任务页() {
       title: '操作',
       key: '操作',
       fixed: 'right',
-      width: 190,
+      width: 130,
       render: (_, 记录) => (
         <Space size={0}>
-          <Button
-            type="link"
-            size="small"
-            loading={试跑中ID === 记录.id}
-            onClick={() => void 执行试跑(记录.id)}
-          >
-            试跑
-          </Button>
           <Button type="link" size="small" onClick={() => 打开编辑(记录)}>
             编辑
           </Button>
@@ -379,26 +356,17 @@ export default function 搜索任务页() {
             <Select options={卖家地区选项} />
           </Form.Item>
 
-          <Form.Item name="必含词" label="必含词（标题须包含，预留能力）">
+          <Form.Item name="必含词" label="必含词（标题须同时包含全部）">
             <Select mode="tags" placeholder="输入后回车添加" tokenSeparators={[',', '，']} />
           </Form.Item>
 
-          <Form.Item name="屏蔽词" label="屏蔽词（标题含此词则排除，预留能力）">
+          <Form.Item name="屏蔽词" label="屏蔽词（标题含任一词即排除）">
             <Select mode="tags" placeholder="输入后回车添加" tokenSeparators={[',', '，']} />
           </Form.Item>
 
-          <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item name="页数" label="爬取页数">
-                <InputNumber min={1} max={10} precision={0} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="每页条数" label="每页条数">
-                <InputNumber min={10} max={50} precision={0} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item name="页数" label="爬取页数（每页固定 30 条）">
+            <InputNumber min={1} max={50} precision={0} style={{ width: '100%' }} />
+          </Form.Item>
 
           <Form.Item name="启用" label="启用任务" valuePropName="checked">
             <Switch />

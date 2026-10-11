@@ -15,24 +15,34 @@ import {
 } from 'antd'
 import {
   BellOutlined,
+  ClockCircleOutlined,
   DashboardOutlined,
+  FallOutlined,
   MenuOutlined,
   SearchOutlined,
   SettingOutlined,
   ShoppingOutlined,
+  StarOutlined,
+  StopOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons'
 import { use应用Store } from '@/store/app'
+import 上新通知 from '@/components/NewGoodsNotifier'
+import 爬取进度指示器 from '@/components/CrawlProgress'
 import 样式 from './MainLayout.module.css'
 
 const { Sider, Header, Content } = Layout
 const { Title } = Typography
 
-/** 导航菜单定义：key 即路由 path */
+/** 导航菜单定义：key 即路由 path，固定顺序排列 */
 const 菜单项: { key: string; label: string; icon: ReactNode }[] = [
   { key: '/dashboard', label: '数据看板', icon: <DashboardOutlined /> },
   { key: '/tasks', label: '搜索任务', icon: <SearchOutlined /> },
-  { key: '/goods', label: '商品数据', icon: <ShoppingOutlined /> },
+  { key: '/favorites', label: '收藏', icon: <StarOutlined /> },
+  { key: '/pending', label: '新商品', icon: <ClockCircleOutlined /> },
+  { key: '/price-drops', label: '新降价', icon: <FallOutlined /> },
+  { key: '/goods', label: '商品列表', icon: <ShoppingOutlined /> },
+  { key: '/blacklist', label: '黑名单', icon: <StopOutlined /> },
   { key: '/scheduler', label: '任务调度', icon: <ThunderboltOutlined /> },
   { key: '/push', label: '推送设置', icon: <BellOutlined /> },
   { key: '/settings', label: '系统设置', icon: <SettingOutlined /> },
@@ -131,6 +141,10 @@ export default function 主布局() {
           </Space>
         </Header>
         <Content className={样式.内容区}>
+          {/* 全局事件通知：SSE 长连接接收上新/降价事件，实时提醒（布局路由内常驻，不随页面切换重挂载） */}
+          <上新通知 />
+          {/* 爬取实时进度指示器：任务搜索时固定在左下角，展示页码与命中统计 */}
+          <爬取进度指示器 />
           <Outlet />
         </Content>
       </Layout>

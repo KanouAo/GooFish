@@ -12,11 +12,13 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: 51267,
+    //  固定端口：被占用时直接报错，不自动跳到 51268/51269，避免实际端口与预期不符
+    strictPort: true,
     //  代理转发到 Python 后端（Server/api_server.py），rewrite 去掉 /api 前缀
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000',
+        target: 'http://127.0.0.1:51266',
         changeOrigin: true,
         rewrite: (路径) => 路径.replace(/^\/api/, ''),
       },

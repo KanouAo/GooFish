@@ -1,0 +1,15 @@
+﻿{
+    // F5 调试配置：从 Server/main.py 启动后端服务
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: 调试 main.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Server/main.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/Server",
+            "justMyCode": true
+        }
+    ]
+}

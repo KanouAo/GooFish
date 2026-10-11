@@ -216,7 +216,7 @@ export default function 调度页() {
       </Row>
 
       {/* 控制与全局配置 */}
-      <Card title="调度控制与全局配置">
+      <Card title="搜索任务调度控制与全局配置">
         <Row gutter={[16, 12]} align="middle" justify="space-between">
           <Col>
             <Form form={配置表单} layout="inline">

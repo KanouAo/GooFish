@@ -4,9 +4,12 @@ import os
 import json
 from ruamel.yaml import YAML
 yaml = YAML(typ='rt')
-option_path='wechat_option.yaml'
-if os.path.exists('test_wechat_option.yaml'):
-    option_path='test_wechat_option.yaml'
+# 路径锚定到脚本自身所在目录，保证从任意工作目录启动都能找到配置文件
+模块目录 = os.path.dirname(os.path.abspath(__file__))
+option_path = os.path.join(模块目录, 'wechat_option.yaml')
+测试配置路径 = os.path.join(模块目录, 'test_wechat_option.yaml')
+if os.path.exists(测试配置路径):
+    option_path = 测试配置路径
 # 定义一个函数，用于获取微信的access_token
 def get_token(appID,appsecret):
     url_token = 'https://api.weixin.qq.com/cgi-bin/token?'
@@ -25,6 +28,13 @@ def read_option(option_path):
 def write_option(option,option_path):
     with open(option_path, 'w', encoding='utf-8') as stream:
         yaml.dump(option, stream)
+
+def 微信推送是否开启() -> bool:
+    """读取微信配置中的推送总开关 wechat_service
+
+    开关已从 option.yaml 迁移到本配置文件：true 时本轮全部上新/降价逐条推送，false 不推
+    """
+    return bool(read_option(option_path).get('wechat_service', False))
 
 #发送模板消息
 def send_good_msg(token,template_id,userID,itemId,title,soldPrice,area,picUrl,itemUrl,color='#FF0000'):

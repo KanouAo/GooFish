@@ -1,15 +1,14 @@
+#后台HTTP服务监听地址与端口（前端系统设置里填的 IP/端口 需与此一致；改动后重启 main.py 生效）
+server_host: 127.0.0.1
+server_port: 51266
 #推送提示自己
 push:
   #当前设备
   device: false
-  #自己的微信公众号推送，详见使用手册
-  wechat_service: false
 #隐私信息随机生成(比如机器编号，cooies之类的每次启动程序后随机生成): true 为是，flase 为否
 random_option: true
 #是否使用代理IP
 use_proxy: true
-#免费代理网站 【没找到合用的网站，这方法没写】我用的站大爷，可以自己换，但要注意get_proxies方法里IP和port的参数位置
-proxies_url: https://www.zdaye.com/free/
 #代理IP
 proxies:
   - 39.107.249.241:3883
@@ -54,80 +53,6 @@ params:
   timeout: "20000"
   api: mtop.taobao.idlemtopsearch.pc.search
   sessionOption: AutoLoginOnly
-  #只是记录行为的埋点而已，搜索或者点击的，固定值。但a21ybx我怀疑有可能是用户id但有可能是站点
+  #只是记录行为的埋点而已，搜索或者点击的，固定值。但a21ybx我怀疑有可能是用户id也有可能是站点
   spm_cnt: a21ybx.search.0.0
   spm_pre: a21ybx.home.searchInput.0
-
-good:
-  #第1个商品
-  #页数
-  - pageNumber:
-      1
-      #搜索关键词
-    keyword:
-      电脑
-      #是否过滤搜索，如果不过滤，直接搜的话为false
-    fromFilter:
-      "true"
-      #每页条数
-    rowsPerPage:
-      30
-      #按价格排序: ''为不排序、'asc'为从低到高、'desc'为从高到低
-    sortValue:
-      ""
-      #综合、新降价、新发布：''为第1个下拉框默认“综合”不排序、'credit'为信用、'pos'为离我最近、'modify'为最近活跃、'reduce'为第2个按钮新降价、'create'为第3个按钮最新(但不包含3、7、14天内发布，这几个情况这个值为'')
-    sortField:
-      create
-      #固定值没测出，可能是距离
-    customDistance:
-      ""
-      #自己的IP地址
-    gps:
-      ""
-      #过滤
-      # "propValueStr":{"searchFilter":"publishDays:7;priceRange:18,28;quickFilter:filterPersonal,filterAppraise,gameAccountInsurance,filterFreePostage,filterHighLevelYxpSeller,filterNew,inspectedPhone,filterOneKeyResell;"}
-      # "propValueStr":{"searchFilter":"publishDays:3;"}
-    propValueStr:
-      searchFilter:
-        #发布日期 : 1、3、7、14 （上面sortField填了最新的话，这只能填空）
-        publishDays:
-          ""
-          #价格区间: 18,undefined （undefined）为不限制
-        priceRange:
-          18,28
-          #下排打勾过滤：'filterPersonal,filterAppraise,gameAccountInsurance,filterFreePostage,filterHighLevelYxpSeller,filterNew,inspectedPhone,filterOneKeyResell;' 个人闲置、验货宝、验号担保、包邮、超赞鱼小铺、全新、严选、转卖
-        quickFilter: filterFreePostage
-      #自己的IP地址
-    customGps:
-      ""
-      #固定值
-    searchReqFromPage:
-      pcSearch
-      #卖家地址: '{"divisionList":[],"excludeMultiPlacesSellers":"0","extraDivision":"江浙沪"}'
-    extraFilterValue:
-      "{}"
-      #没测出，但可能是用户位置
-    userPositionJson:
-      "{}"
-      #直接用这个，如果这个为空就用上面数据组合而成
-      # data: '{"pageNumber":1,"keyword":"电脑","fromFilter":true,"rowsPerPage":30,"sortValue":"desc","sortField":"reduce","customDistance":"","gps":"","propValueStr":{"searchFilter":"quickFilter:filterPersonal,filterAppraise,gameAccountInsurance,filterFreePostage,filterHighLevelYxpSeller,filterNew,inspectedPhone,filterOneKeyResell;"},"customGps":"","searchReqFromPage":"pcSearch","extraFilterValue":"{\"divisionList\":[],\"excludeMultiPlacesSellers\":\"0\",\"extraDivision\":\"江浙沪\"}","userPositionJson":"{}"}'
-      # data: '{"pageNumber":1,"keyword":"电脑","fromFilter":false,"rowsPerPage":30,"sortValue":"","sortField":"","customDistance":"","gps":"","propValueStr":{},"customGps":"","searchReqFromPage":"pcSearch","extraFilterValue":"{}","userPositionJson":"{}"}'
-      # data: ''
-    #第2个商品
-  - pageNumber: 1
-    keyword: 电脑
-    fromFilter: "true"
-    rowsPerPage: 30
-    sortValue: ""
-    sortField: reduce
-    customDistance: ""
-    gps: ""
-    propValueStr:
-      searchFilter:
-        publishDays: ""
-        priceRange: 18,28
-        quickFilter: filterFreePostage
-    customGps: ""
-    searchReqFromPage: pcSearch
-    extraFilterValue: "{}"
-    userPositionJson: "{}"
