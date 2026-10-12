@@ -7,7 +7,7 @@ import 主布局 from '@/layouts/MainLayout'
 import 看板页 from '@/pages/dashboard/Dashboard'
 import 商品列表页 from '@/pages/goods/GoodsList'
 import 收藏页 from '@/pages/goods/Favorites'
-import 待处理页 from '@/pages/goods/Pending'
+import 新商品页 from '@/pages/goods/Pending'
 import 新降价页 from '@/pages/goods/PriceDrops'
 import 黑名单页 from '@/pages/goods/Blacklist'
 import 推送页 from '@/pages/push/Push'
@@ -37,7 +37,7 @@ export default function App() {
               <Route path="/dashboard" element={<看板页 />} />
               <Route path="/tasks" element={<搜索任务页 />} />
               <Route path="/favorites" element={<收藏页 />} />
-              <Route path="/pending" element={<待处理页 />} />
+              <Route path="/pending" element={<新商品页 />} />
               <Route path="/price-drops" element={<新降价页 />} />
               <Route path="/goods" element={<商品列表页 />} />
               <Route path="/blacklist" element={<黑名单页 />} />

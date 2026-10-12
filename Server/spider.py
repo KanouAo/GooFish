@@ -1,5 +1,5 @@
 #  爬取适配层：复用 search 的真实搜索能力（物品信息类），把前端搜索任务配置转换为
-#  search_data 结构并执行搜索、解析商品；不涉及业务处理（黑名单/待处理/降价逻辑在 api_server.py）
+#  search_data 结构并执行搜索、解析商品；不涉及业务处理（黑名单/新商品/降价逻辑在 api_server.py）
 
 import json
 import random

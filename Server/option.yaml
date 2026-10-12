@@ -4,7 +4,7 @@ server_port: 51266
 #推送提示自己
 push:
   #当前设备
-  device: false
+  device: true
 #隐私信息随机生成(比如机器编号，cooies之类的每次启动程序后随机生成): true 为是，flase 为否
 random_option: true
 #是否使用代理IP

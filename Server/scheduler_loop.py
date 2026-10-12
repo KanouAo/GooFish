@@ -91,7 +91,7 @@ class 循环调度线程类(threading.Thread):
                     break  # 停顿期间被停止则直接退出本轮
             # 本轮所有任务执行完：设备统一只发 1 条汇总通知，微信开启则逐条全部推送
             api_server.结束收集并推送()
-            # 等待下一轮：间隔在配置基础上 0%~-25% 随机浮动，避免固定周期被反爬识别
+            # 等待下一轮：间隔在配置基础上 -±25% 随机浮动，避免固定周期被反爬识别
             # 顺序必须是 先清唤醒信号 → 核对停止标志 → 再等待：防止信号在清空与检查之间丢失
             # 导致睡满整个旧间隔；停止/配置变更/任务开关都会置位打断事件，wait 一次性返回
             打断事件.clear()
@@ -100,7 +100,7 @@ class 循环调度线程类(threading.Thread):
             if 停止事件.is_set():
                 break
             间隔秒数 = int(config_manager.option.get('repeat_sleep', 1800)) if config_manager.option else 1800
-            打断事件.wait(间隔秒数 * random.uniform(0.75, 1))
+            打断事件.wait(间隔秒数 * random.uniform(0.75, 1.25))
             if 停止事件.is_set():
                 break
             if 任务变更事件.is_set():

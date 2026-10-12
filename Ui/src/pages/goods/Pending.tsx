@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { App, Button, Popconfirm, Space, Table } from 'antd'
 import type { TableProps } from 'antd'
 import { CheckOutlined, RestOutlined, StarFilled, StarOutlined, StopOutlined } from '@ant-design/icons'
-import { 切换商品收藏, 获取待处理列表, 待处理收录, 待处理拉黑, 清空待处理 } from '@/api/goods'
+import { 切换商品收藏, 获取新商品列表, 新商品收录, 新商品拉黑, 清空新商品 } from '@/api/goods'
 import { 获取任务列表 } from '@/api/task'
 import { use应用Store } from '@/store/app'
 import type { 商品类型, 搜索任务类型 } from '@/types/biz'
@@ -21,7 +21,7 @@ export default function 新商品页() {
   const 加载 = useCallback(async (关键词?: string) => {
     set加载中(true)
     try {
-      set数据(await 获取待处理列表(关键词))
+      set数据(await 获取新商品列表(关键词))
     } finally {
       set加载中(false)
     }
@@ -36,7 +36,7 @@ export default function 新商品页() {
 
   /** 确认（已阅）：仅从新商品列表移除，商品仍在商品列表 */
   const 确认 = async (记录: 商品类型) => {
-    await 待处理收录(记录.id)
+    await 新商品收录(记录.id)
     message.success('已确认，商品保留在商品列表')
     await 加载(所属关键词)
   }
@@ -48,14 +48,14 @@ export default function 新商品页() {
   }
 
   const 拉黑 = async (记录: 商品类型) => {
-    await 待处理拉黑(记录.id)
+    await 新商品拉黑(记录.id)
     message.success('已加入黑名单，商品列表中也已移除')
     await 加载(所属关键词)
   }
 
   /** 一键清空：全部标记为已确认，仅清本页提醒，商品仍在商品列表 */
   const 一键清空 = async () => {
-    const 结果 = await 清空待处理()
+    const 结果 = await 清空新商品()
     message.success(`已清空 ${结果.清空数量} 条新商品记录，商品仍保留在商品列表`)
     await 加载(所属关键词)
   }

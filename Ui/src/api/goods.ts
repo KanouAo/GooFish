@@ -37,18 +37,18 @@ export const 黑名单还原 = (id: string) =>
 export const 清空商品数据 = () =>
   请求<{ 清空数量: number }>('/goods/clear', { method: 'POST' })
 
-/** 获取待处理商品列表（新爬到、待人工审核；支持所属关键词筛选） */
-export const 获取待处理列表 = (所属关键词?: string) =>
+/** 获取新商品商品列表（新爬到、待人工审核；支持所属关键词筛选） */
+export const 获取新商品列表 = (所属关键词?: string) =>
   请求<商品类型[]>('/goods/pending', {
     参数: 所属关键词 ? { 所属关键词 } : undefined,
   })
 
-/** 待处理商品收录进商品列表 */
-export const 待处理收录 = (id: string) =>
+/** 新商品商品收录进商品列表 */
+export const 新商品收录 = (id: string) =>
   请求<{ id: string }>(`/goods/pending/${id}/accept`, { method: 'POST' })
 
-/** 待处理商品直接拉黑 */
-export const 待处理拉黑 = (id: string) =>
+/** 新商品商品直接拉黑 */
+export const 新商品拉黑 = (id: string) =>
   请求<{ id: string }>(`/goods/pending/${id}/blacklist`, { method: 'POST' })
 
 /** 一键清空黑名单 */
@@ -56,7 +56,7 @@ export const 清空黑名单 = () =>
   请求<{ 清空数量: number }>('/goods/blacklist/clear', { method: 'POST' })
 
 /** 一键清空新商品列表（等同批量确认，商品仍保留在商品列表） */
-export const 清空待处理 = () =>
+export const 清空新商品 = () =>
   请求<{ 清空数量: number }>('/goods/pending/clear', { method: 'POST' })
 
 /** 获取降价商品列表（支持所属关键词筛选） */

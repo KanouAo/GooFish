@@ -251,12 +251,12 @@ def 切换任务状态(参数, 查询, 体):
 # ===================== 真实搜索执行与结果处理 =====================
 
 def 处理搜索结果(任务: dict, 原始商品列表: list) -> dict:
-    """业务处理真实爬到的商品：词过滤、黑名单过滤、待处理入队、降级判断、事件推送"""
+    """业务处理真实爬到的商品：词过滤、黑名单过滤、新商品入队、降级判断、事件推送"""
     必含词 = 任务.get('必含词') or []
     屏蔽词 = 任务.get('屏蔽词') or []
     黑名单ID = {b['商品ID'] for b in record_store.黑名单列表}
     已收录ID = {g['id'] for g in record_store.商品列表}
-    待处理ID = {p['id'] for p in record_store.待处理列表}
+    新商品ID = {p['id'] for p in record_store.新商品列表}
 
     统计 = {'命中数': 0, '黑名单过滤数': 0, '新商品数': 0, '推送数': 0}
     现在 = 格式化时间(datetime.now())
@@ -274,7 +274,7 @@ def 处理搜索结果(任务: dict, 原始商品列表: list) -> dict:
         商品ID = 原始['商品ID']
         if 商品ID in 黑名单ID:
             统计['黑名单过滤数'] += 1
-            continue  # 拉黑商品：不收录、不进待处理
+            continue  # 拉黑商品：不收录、不进新商品
 
         新价格 = float(原始['价格'])
         if 商品ID in 已收录ID:
@@ -303,8 +303,8 @@ def 处理搜索结果(任务: dict, 原始商品列表: list) -> dict:
                         商品['降价'] = True
                         统计['推送数'] += 1
                     break
-        elif 商品ID not in 待处理ID:
-            # 新商品：同时进入商品列表（纳入正常管理）和待处理审核队列（提醒用户查看）
+        elif 商品ID not in 新商品ID:
+            # 新商品：同时进入商品列表（纳入正常管理）和新商品审核队列（提醒用户查看）
             新商品 = {
                 'id': 商品ID,
                 '标题': 标题,
@@ -319,7 +319,7 @@ def 处理搜索结果(任务: dict, 原始商品列表: list) -> dict:
                 '收藏': False,
             }
             record_store.商品列表.insert(0, 新商品)
-            record_store.待处理列表.insert(0, 新商品)
+            record_store.新商品列表.insert(0, 新商品)
             统计['新商品数'] += 1
             推送事件('上新', 新商品)
 
@@ -330,7 +330,7 @@ def 执行真实搜索(任务: dict, 中断检查=None) -> dict:
     """调用 spider 真实搜索并逐页实时完成业务处理，返回统一结果结构
 
     中断检查：透传给 spider，每页开爬前检测；返回 True 时立即停止翻页（UI 停用任务/停止调度）
-    逐页实时处理：每页爬完立即过业务管线（词过滤/黑名单/待处理/降价判断）并推 SSE——
+    逐页实时处理：每页爬完立即过业务管线（词过滤/黑名单/新商品/降价判断）并推 SSE——
     网页 UI 在爬取过程中就能看到上新/降价与进度，不用等整个任务（可能数分钟）跑完
     锁粒度：网络爬取在锁外、仅每页的本地数据处理持数据库锁，避免爬取期间 HTTP API 被阻塞
     """
@@ -468,8 +468,8 @@ def 商品加入黑名单(参数, 查询, 体):
     for 索引, 商品 in enumerate(商品列表):
         if 商品['id'] == 参数['id']:
             商品列表.pop(索引)
-            # 同时从待处理列表移除（新商品可能同时在两个列表）
-            record_store.待处理列表 = [p for p in record_store.待处理列表 if p['id'] != 商品['id']]
+            # 同时从新商品列表移除（新商品可能同时在两个列表）
+            record_store.新商品列表 = [p for p in record_store.新商品列表 if p['id'] != 商品['id']]
             加入黑名单通用(商品)
             return {'id': 商品['id']}
     raise ValueError('商品不存在')
@@ -490,35 +490,35 @@ def 清空商品数据(参数, 查询, 体):
     return {'清空数量': 清空数量}
 
 
-# ===================== 待处理审核 =====================
+# ===================== 新商品审核 =====================
 
-def 获取待处理(参数, 查询, 体):
+def 获取新商品(参数, 查询, 体):
     所属关键词 = 取文本(查询.get('所属关键词'))
-    结果 = [g for g in record_store.待处理列表 if not 所属关键词 or g['所属关键词'] == 所属关键词]
+    结果 = [g for g in record_store.新商品列表 if not 所属关键词 or g['所属关键词'] == 所属关键词]
     return sorted(结果, key=lambda g: g['价格'])
 
 
-def 待处理收录(参数, 查询, 体):
-    待处理 = record_store.待处理列表
-    for 索引, 商品 in enumerate(待处理):
+def 新商品收录(参数, 查询, 体):
+    新商品 = record_store.新商品列表
+    for 索引, 商品 in enumerate(新商品):
         if 商品['id'] == 参数['id']:
-            待处理.pop(索引)
+            新商品.pop(索引)
             if not any(g['id'] == 商品['id'] for g in record_store.商品列表):
                 record_store.商品列表.insert(0, 商品)
             return {'id': 商品['id']}
-    raise ValueError('待处理商品不存在')
+    raise ValueError('新商品商品不存在')
 
 
-def 待处理拉黑(参数, 查询, 体):
-    待处理 = record_store.待处理列表
-    for 索引, 商品 in enumerate(待处理):
+def 新商品拉黑(参数, 查询, 体):
+    新商品 = record_store.新商品列表
+    for 索引, 商品 in enumerate(新商品):
         if 商品['id'] == 参数['id']:
-            待处理.pop(索引)
+            新商品.pop(索引)
             # 新商品同时在商品列表，拉黑时需从商品列表也移除
             record_store.商品列表 = [g for g in record_store.商品列表 if g['id'] != 商品['id']]
             加入黑名单通用(商品)
             return {'id': 商品['id']}
-    raise ValueError('待处理商品不存在')
+    raise ValueError('新商品商品不存在')
 
 
 def 清空黑名单(参数, 查询, 体):
@@ -527,12 +527,12 @@ def 清空黑名单(参数, 查询, 体):
     return {'清空数量': 清空数量}
 
 
-def 清空待处理(参数, 查询, 体):
+def 清空新商品(参数, 查询, 体):
     """一键清空新商品列表：等同批量确认，仅移除新到提醒标记
     商品已在商品列表中，不受影响（不拉黑、不删除）
     """
-    清空数量 = len(record_store.待处理列表)
-    record_store.待处理列表 = []
+    清空数量 = len(record_store.新商品列表)
+    record_store.新商品列表 = []
     return {'清空数量': 清空数量}
 
 
@@ -789,13 +789,13 @@ def 刷新令牌(参数, 查询, 体):
 注册路由('POST', '/goods/:id/blacklist', 商品加入黑名单)
 注册路由('POST', '/goods/blacklist/:id/restore', 黑名单还原)
 注册路由('POST', '/goods/clear', 清空商品数据)
-注册路由('GET', '/goods/pending', 获取待处理)
-注册路由('POST', '/goods/pending/:id/accept', 待处理收录)
-注册路由('POST', '/goods/pending/:id/blacklist', 待处理拉黑)
+注册路由('GET', '/goods/pending', 获取新商品)
+注册路由('POST', '/goods/pending/:id/accept', 新商品收录)
+注册路由('POST', '/goods/pending/:id/blacklist', 新商品拉黑)
 注册路由('GET', '/goods/price-drops', 获取降价列表)
 注册路由('POST', '/goods/price-drops/:id/confirm', 确认降价)
 注册路由('POST', '/goods/blacklist/clear', 清空黑名单)
-注册路由('POST', '/goods/pending/clear', 清空待处理)
+注册路由('POST', '/goods/pending/clear', 清空新商品)
 
 注册路由('GET', '/scheduler/status', 调度状态)
 注册路由('POST', '/scheduler/start', 启动调度)
@@ -814,7 +814,7 @@ def 刷新令牌(参数, 查询, 体):
 
 
 # ===================== good_record.json 持久化 =====================
-# 结构：{商品列表, 黑名单列表, 待处理列表, 降价列表, 历史价格}
+# 结构：{商品列表, 黑名单列表, 新商品列表, 降价列表, 历史价格}
 # 读写统一委托 record_store 模块
 
 

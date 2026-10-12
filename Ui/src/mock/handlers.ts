@@ -109,12 +109,12 @@ export function 注册全部Mock路由(): void {
     return { id: 任务.id, 启用: 任务.启用 }
   })
 
-  /** 手动试跑一次：模拟请求咸鱼接口，新商品进入待处理审核队列 */
+  /** 手动试跑一次：模拟请求咸鱼接口，新商品进入新商品审核队列 */
   注册路由('POST', '/tasks/:id/run', (ctx: Mock上下文类型) => {
     const 任务 = 数据库.任务列表.find((t) => t.id === ctx.params.id)
     if (!任务) throw new Error('任务不存在')
     const 新商品数 = 2 + (Number(任务.id) % 3)
-    数据库.待处理列表.unshift(...Array.from({ length: 新商品数 }, () => 生成新商品(任务.关键词)))
+    数据库.新商品列表.unshift(...Array.from({ length: 新商品数 }, () => 生成新商品(任务.关键词)))
     return {
       任务ID: 任务.id,
       结果数: 18 + (Number(任务.id) % 12),
@@ -209,27 +209,27 @@ export function 注册全部Mock路由(): void {
     return { 清空数量 }
   })
 
-  // ===================== 待处理审核 =====================
+  // ===================== 新商品审核 =====================
 
-  /** 获取待处理商品列表（新爬到、待人工审核） */
-  注册路由('GET', '/goods/pending', () => 数据库.待处理列表)
+  /** 获取新商品商品列表（新爬到、待人工审核） */
+  注册路由('GET', '/goods/pending', () => 数据库.新商品列表)
 
-  /** 待处理商品收录进商品列表 */
+  /** 新商品商品收录进商品列表 */
   注册路由('POST', '/goods/pending/:id/accept', (ctx: Mock上下文类型) => {
-    const 索引 = 数据库.待处理列表.findIndex((g) => g.id === ctx.params.id)
-    if (索引 === -1) throw new Error('待处理商品不存在')
-    const [商品] = 数据库.待处理列表.splice(索引, 1)
+    const 索引 = 数据库.新商品列表.findIndex((g) => g.id === ctx.params.id)
+    if (索引 === -1) throw new Error('新商品商品不存在')
+    const [商品] = 数据库.新商品列表.splice(索引, 1)
     if (!数据库.商品列表.some((g) => g.id === 商品.id)) {
       数据库.商品列表.unshift(商品)
     }
     return { id: 商品.id }
   })
 
-  /** 待处理商品直接拉黑 */
+  /** 新商品商品直接拉黑 */
   注册路由('POST', '/goods/pending/:id/blacklist', (ctx: Mock上下文类型) => {
-    const 索引 = 数据库.待处理列表.findIndex((g) => g.id === ctx.params.id)
-    if (索引 === -1) throw new Error('待处理商品不存在')
-    const [商品] = 数据库.待处理列表.splice(索引, 1)
+    const 索引 = 数据库.新商品列表.findIndex((g) => g.id === ctx.params.id)
+    if (索引 === -1) throw new Error('新商品商品不存在')
+    const [商品] = 数据库.新商品列表.splice(索引, 1)
     if (!数据库.黑名单列表.some((b) => b.商品ID === 商品.id)) {
       数据库.黑名单列表.unshift({
         id: 商品.id,
@@ -284,12 +284,12 @@ export function 注册全部Mock路由(): void {
 
   注册路由('GET', '/scheduler/records', () => 数据库.执行记录)
 
-  /** 立即执行指定任务：生成一条新的执行记录，新商品进入待处理审核队列 */
+  /** 立即执行指定任务：生成一条新的执行记录，新商品进入新商品审核队列 */
   注册路由('POST', '/scheduler/run/:taskId', (ctx: Mock上下文类型) => {
     const 任务 = 数据库.任务列表.find((t) => t.id === ctx.params.taskId)
     if (!任务) throw new Error('任务不存在')
     const 新商品数 = 1 + (Number(任务.id) % 4)
-    数据库.待处理列表.unshift(...Array.from({ length: 新商品数 }, () => 生成新商品(任务.关键词)))
+    数据库.新商品列表.unshift(...Array.from({ length: 新商品数 }, () => 生成新商品(任务.关键词)))
     const 新记录 = {
       id: `${Date.now()}`,
       任务ID: 任务.id,
